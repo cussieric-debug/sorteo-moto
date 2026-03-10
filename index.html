@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sorteo Moto Gilera Sahel 150</title>
+
+    <style>
+        :root {
+            --primario: #4CAF50;
+            --secundario: #e53935;
+            --oscuro: #111;
+            --gris-fondo: #f4f7f6;
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: var(--gris-fondo);
+            margin: 0;
+            text-align: center;
+            color: #333;
+        }
+
+        header {
+            background: var(--oscuro);
+            color: white;
+            padding: 40px 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        h1 { margin: 0; font-size: 2rem; }
+
+        .info {
+            background: white;
+            max-width: 800px;
+            margin: -30px auto 20px;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 10;
+        }
+
+        .premios-lista {
+            text-align: left;
+            display: inline-block;
+            margin: 15px 0;
+        }
+
+        .premio {
+            font-size: 1.1rem;
+            margin: 8px 0;
+            padding-left: 5px;
+        }
+
+        .valor {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: var(--primario);
+            margin: 20px 0;
+            background: #e8f5e9;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        /* Buscador */
+        .buscador-container {
+            margin: 20px auto;
+            max-width: 400px;
+            padding: 0 20px;
+        }
+
+        #buscador {
+            width: 100%;
+            padding: 12px;
+            border-radius: 25px;
+            border: 2px solid #ddd;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        #buscador:focus { border-color: var(--primario); }
+
+        /* Progreso */
+        .progreso-container {
+            margin: 20px 0;
+        }
+
+        .progreso {
+            width: 100%;
+            height: 15px;
+            background: #eee;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid #ddd;
+        }
+
+        .barra {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #81C784);
+            width: 0%;
+            transition: width 0.5s ease-in-out;
+        }
+
+        .contador { font-weight: bold; margin-bottom: 5px; }
+
+        /* Grid de Números */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 8px;
+            padding: 20px;
+            max-width: 1000px;
+            margin: auto;
+        }
+
+        .numero {
+            padding: 15px 5px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            transition: transform 0.2s;
+            user-select: none;
+        }
+
+        .disponible {
+            background: white;
+            border: 2px solid var(--primario);
+            color: var(--primario);
+            cursor: pointer;
+        }
+
+        .disponible:hover {
+            background: var(--primario);
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .vendido {
+            background: #ddd;
+            color: #888;
+            text-decoration: line-through;
+            cursor: not-allowed;
+            border: 2px solid #ccc;
+        }
+
+        /* Ajustes para Celulares */
+        @media (max-width: 768px) {
+            .grid { grid-template-columns: repeat(5, 1fr); }
+            h1 { font-size: 1.5rem; }
+        }
+
+        @media (max-width: 480px) {
+            .grid { grid-template-columns: repeat(4, 1fr); gap: 5px; }
+            .numero { padding: 10px 2px; font-size: 0.8rem; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>🎟️ GRAN SORTEO MOTO 150</h1>
+    <p>¡Tu oportunidad de ganar la Gilera Sahel!</p>
+</header>
+
+<div class="info">
+    <h2>🏆 Lista de Premios</h2>
+    <div class="premios-lista">
+        <div class="premio">🥇 <b>1er premio:</b> Moto Gilera Sahel 150</div>
+        <div class="premio">🥈 <b>2do premio:</b> $300.000</div>
+        <div class="premio">🥉 <b>3er premio:</b> $200.000</div>
+        <div class="premio">4️⃣ <b>4to premio:</b> $100.000</div>
+    </div>
+
+    <div class="valor">💰 Valor del número: $5.000</div>
+
+    <div class="progreso-container">
+        <div class="contador" id="contador">Cargando...</div>
+        <div class="progreso">
+            <div class="barra" id="barra"></div>
+        </div>
+    </div>
+</div>
+
+<div class="buscador-container">
+    <input type="number" id="buscador" placeholder="🔍 Buscar número (ej: 0550)...">
+</div>
+
+<div class="grid" id="numeros"></div>
+
+<script>
+    // CONFIGURACIÓN
+    const telefono = "5493884497440";
+    const totalNumeros = 2000;
+    
+    // AGREGA AQUÍ LOS NÚMEROS VENDIDOS (ej: ["0001", "0542"])
+    const vendidos = []; 
+
+    const contenedor = document.getElementById("numeros");
+    const buscador = document.getElementById("buscador");
+
+    // Función para generar los números
+    function renderizarNumeros() {
+        contenedor.innerHTML = "";
+        for(let i = 1; i <= totalNumeros; i++) {
+            let num = i.toString().padStart(4, '0');
+            let div = document.createElement("div");
+            
+            if(vendidos.includes(num)) {
+                div.className = "numero vendido";
+                div.innerText = num;
+            } else {
+                div.className = "numero disponible";
+                div.innerText = num;
+                div.onclick = () => enviarWhatsapp(num);
+            }
+            contenedor.appendChild(div);
+        }
+    }
+
+    function enviarWhatsapp(num) {
+        let mensaje = `¡Hola! Me gustaría reservar el número *${num}* para el sorteo de la Moto Gilera.`;
+        window.open(`https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`);
+    }
+
+    // Buscador en tiempo real
+    buscador.oninput = function() {
+        let valor = this.value.padStart(4, '0');
+        let todos = document.querySelectorAll(".numero");
+        
+        todos.forEach(el => {
+            if(this.value === "") {
+                el.style.display = "block";
+            } else {
+                el.style.display = el.innerText.includes(this.value) ? "block" : "none";
+            }
+        });
+    }
+
+    // Actualizar Contador y Barra
+    function actualizarEstado() {
+        let vendidosCant = vendidos.length;
+        let porcentaje = (vendidosCant / totalNumeros) * 100;
+        
+        document.getElementById("contador").innerText = `${vendidosCant} de ${totalNumeros} números vendidos`;
+        document.getElementById("barra").style.width = porcentaje + "%";
+    }
+
+    // Iniciar
+    renderizarNumeros();
+    actualizarEstado();
+
+</script>
+
+</body>
+</html>
